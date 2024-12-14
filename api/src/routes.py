@@ -1,6 +1,7 @@
 import json
 import os
-from fastapi import APIRouter, Query
+from clients.sinch import Sinch
+from fastapi import APIRouter, Query, HTTPException
 from pydantic import BaseModel
 from openai import OpenAI
 from anthropic import Anthropic
@@ -46,6 +47,10 @@ class VectorSearchItem(BaseModel):
 
 class VectorSearchResponse(BaseModel):
     items: List[VectorSearchItem]
+
+class SinchSMSResponse(BaseModel):
+    message_id: str
+    accepted_time: str
 
 #### Routes ####
 
@@ -159,3 +164,20 @@ async def search_vector_inventory(
 
     finally:
         vector_client.close()
+
+@router.get("/test/sinch",
+            response_model=SinchSMSResponse,
+            description="Send SMS using Sinch")
+async def send_sms(
+    to: str,
+    message: str
+) -> SinchSMSResponse:
+    sinch_client = Sinch()
+    try:
+        response = sinch_client.send_rcs(to, message)
+        return SinchSMSResponse(
+            message_id=response["message_id"],
+            accepted_time=response["accepted_time"]
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
