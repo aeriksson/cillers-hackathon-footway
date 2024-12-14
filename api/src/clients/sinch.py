@@ -15,7 +15,6 @@ class Sinch:
             self.api_secret = os.getenv("SINCH_API_KEY_SECRET")
             self.project_id = os.getenv("SINCH_API_PROJECT_ID")
             self.app_id = os.getenv("SINCH_APP_ID")
-            self.sms_sender = os.getenv("SINCH_SMS_SENDER")
             self.base_url = "https://eu.conversation.api.sinch.com/v1"
             
             # Generate access token
@@ -40,15 +39,13 @@ class Sinch:
     def send_rcs(self, 
                 to: Union[str, List[str]], 
                 message: str, 
-                from_number: str = None, 
                 delivery_report: str = "none") -> Union[Dict[str, Any], List[Dict[str, Any]]]:
         """
-        Send SMS using Sinch Conversation API
+        Send RCS using Sinch Conversation API
         
         Args:
-            to (str or list): Phone number(s) to send SMS to
+            to (str or list): Phone number(s) to send RCS to
             message (str): Message content
-            from_number (str, optional): Sender number. Defaults to None
             delivery_report (str, optional): Delivery report type. Defaults to "none"
         
         Returns:
@@ -66,13 +63,10 @@ class Sinch:
             for num in to_numbers
         ]
         
-        sms_sender = from_number if from_number else self.sms_sender
-        
         logger.info("Sending RCS to %d recipient(s)", len(to_numbers))
         logger.info(
-            "RCS details - Recipients: %s, From: %s, Message length: %d",
+            "RCS details - Recipients: %s, Message length: %d",
             repr(to_numbers),
-            str(sms_sender),
             len(message)
         )
         
