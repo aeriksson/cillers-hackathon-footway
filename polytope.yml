@@ -10,7 +10,6 @@ modules:
   - id: kong
     module: polytope/kong!simple
     args:
-      image: gcr.io/arched-inkwell-420116/kong:3.6.1
       port: 3000
       config-file: { type: host, path: ./conf/components/kong/dev.yml }
       autoreload: true
@@ -21,14 +20,16 @@ modules:
     module: polytope/python
     args:
       id: backend
-      image: gcr.io/arched-inkwell-420116/python:3.11.8-slim-bookworm
-      code: { type: host, path: ./api }
+      image: public.ecr.aws/docker/library/python:3.13-slim-bookworm
+      code: { type: host, path: api }
       cmd: ./bin/run
-      restart: { policy: on-failure }
+      restart:
+        policy: always
       services:
-        - { id: "api", ports: [{protocol: http, port: 80, expose-as: 3001}] }
+        - { id: "api", ports: [{protocol: http, port: 8080, expose-as: 3001}] }
       env:
-        - { name: API_PORT, value: 80 }
+        - { name: API_PORT, value: 8080 }
+        - { name: PUBLIC_URL, value: "http://localhost:3000" }
         - { name: LOG_LEVEL, value: INFO }
         - { name: OPENAI_API_KEY, value: "#pt-secret openai-api-key" }
         - { name: ANTHROPIC_API_KEY, value: "#pt-secret anthropic-api-key" }
@@ -50,18 +51,19 @@ modules:
     module: polytope/node
     args:
       id: frontend
-      image: node:22-bullseye
+      image: node:21-bullseye-slim
       code: { type: host, path: ./frontend }
       cmd: ./bin/run
       env:
-        - { name: PORT, value: 3000 }
+        - { name: PORT, value: 8080 }
         - { name: HOST, value: 0.0.0.0 }
         - { name: REACT_APP_API_BASE_URL, value: "http://localhost:3000" }
+        - { name: PUBLIC_URL, value: "http://localhost:3000" }
       restart:
-        policy: on-failure
+        policy: always
       services:
         - id: frontend
-          ports: [{protocol: http, port: 3000, expose-as: 3002}]
+          ports: [{protocol: http, port: 8080, expose-as: 3002}]
       mounts:
         - { path: /root/.cache/, source: { type: volume, scope: project, id: dependency-cache }}
         - { path: /root/.npm/, source: { type: volume, scope: project, id: npm-cache }}
@@ -76,6 +78,8 @@ modules:
         - { name: POSTGRES_USER, value: "postgres" }
         - { name: POSTGRES_PASSWORD, value: "postgres" }
       data-volume: { type: volume, scope: project, id: postgres-data }
+      restart:
+        policy: always
       services:
         - id: postgres
           ports: [{ port: 5432 }]
