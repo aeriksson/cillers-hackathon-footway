@@ -54,9 +54,7 @@ class SinchSMSResponse(BaseModel):
 
 #### Routes ####
 
-@router.get("/hello",
-            response_model=DemoResponse,
-            description="Returns a greeting message.")
+@router.get("", response_model=DemoResponse, description="Returns a greeting message.")
 async def hello() -> DemoResponse:
     return DemoResponse(message="Hello from the API!")
 
