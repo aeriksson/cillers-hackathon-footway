@@ -53,14 +53,14 @@ Finally, run the following command to start the app:
 pt run stack
 ```
 
-Then open the UI at [http://localhost:3002](http://localhost:3002). This can take a little while to return something useful - especially on the first run, because it needs to set up all the dependencies.
+Then open the UI at [http://localhost:3000](http://localhost:3000). This can take a little while to return something useful - especially on the first run, because it needs to set up all the dependencies.
 
-API documentation is automatically generated and can be found at [http://localhost:3001/docs](http://localhost:3001/docs).
+API documentation is automatically generated and can be found at [http://localhost:3000/docs](http://localhost:3000/docs).
 
 Some things you can try:
-- `curl http://localhost:3001/api/hello` - Responds with a hello world message. This means the API is working!
-- `curl 'http://localhost:3001/api/test/footway?variant_ids=1216453'` - Run a query against the Footway API.
-- `curl 'http://localhost:3001/api/test/vector?query=Soccer'` - Runs a query against the provided vector embeddings.
+- `curl http://localhost:3000/api` - Responds with a hello world message. This means the API is working!
+- `curl 'http://localhost:3000/api/test/footway?variant_ids=1216453'` - Run a query against the Footway API.
+- `curl 'http://localhost:3000/api/test/vector?query=Soccer'` - Runs a query against the provided vector embeddings.
 - `curl -X POST -H "Content-Type: application/json" -d '{"prompt":"wassup"}' http://localhost:11100/api/test/anthropic` - Run a query against the Anthropic API.
 - `curl -X POST -H "Content-Type: application/json" -d '{"prompt":"wassup"}' http://localhost:11100/api/test/openai` - Run a query against the OpenAI API.
 
