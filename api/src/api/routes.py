@@ -7,9 +7,9 @@ from openai import OpenAI
 from anthropic import Anthropic
 from typing import List, Optional, Dict, Any
 
-from clients.footway import FootwayClient, InventoryItem
-from clients.postgres import PostgresVectorClient
-from utils import log
+from .clients.footway import FootwayClient, InventoryItem
+from .clients.postgres import PostgresVectorClient
+from .utils import log
 
 logger = log.get_logger(__name__)
 

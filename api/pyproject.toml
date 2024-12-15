@@ -1,0 +1,20 @@
+[project]
+name = "api"
+version = "0.1.0"
+description = "API service for the stack"
+requires-python = ">=3.13"
+dependencies = [
+    "anthropic>=0.40.0",
+    "fastapi>=0.115.6",
+    "openai>=1.57.4",
+    "pandas>=2.2.3",
+    "psycopg2-binary>=2.9.10",
+    "uvicorn>=0.34.0",
+]
+
+[project.scripts]
+api = "api.main:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

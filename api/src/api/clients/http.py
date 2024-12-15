@@ -2,7 +2,7 @@ import httpx
 from datetime import datetime
 import json
 
-from . import log
+from ..utils import log
 
 logger = log.get_logger(__name__)
 

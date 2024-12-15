@@ -1,14 +1,17 @@
 import os
 from typing import List, Optional, Tuple, Any, Dict
-import numpy as np
 import psycopg2
 from psycopg2.extras import execute_values
 from psycopg2.extensions import connection
-import logging
-import requests
+
 import pandas as pd
 import json
 from io import StringIO
+
+from . import http
+from ..utils import log
+
+logger = log.get_logger(__name__)
 
 class PostgresVectorClient:
     def __init__(
@@ -29,7 +32,6 @@ class PostgresVectorClient:
         self.table_name = table_name
         self.vector_dimension = vector_dimension
         self.conn: Optional[connection] = None
-        self.logger = logging.getLogger(__name__)
 
     def connect(self) -> None:
         """Establish connection to PostgreSQL database and ensure pgvector extension exists."""
@@ -46,7 +48,7 @@ class PostgresVectorClient:
                 cur.execute("CREATE EXTENSION IF NOT EXISTS vector;")
                 self.conn.commit()
         except Exception as e:
-            self.logger.error(f"Failed to connect to database: {str(e)}")
+            logger.error(f"Failed to connect to database: {str(e)}")
             raise
 
     def initialize_table(self) -> None:
@@ -77,7 +79,7 @@ class PostgresVectorClient:
                 cur.execute(create_index_query)
                 self.conn.commit()
         except Exception as e:
-            self.logger.error(f"Failed to initialize table: {str(e)}")
+            logger.error(f"Failed to initialize table: {str(e)}")
             raise
 
     def _clean_metadata_string(self, meta_str: str) -> str:
@@ -106,7 +108,7 @@ class PostgresVectorClient:
 
         return cleaned_meta
 
-    def load_sample_data(self) -> None:
+    async def load_sample_data(self) -> None:
         """Load sample data into the vector store if the table is empty."""
         if not self.conn:
             self.connect()
@@ -122,13 +124,14 @@ class PostgresVectorClient:
                 table_has_data = cur.fetchone()[0]
 
                 if table_has_data:
-                    self.logger.info(f"Table {self.table_name} already contains data. Skipping sample data load.")
+                    logger.info(f"Table {self.table_name} already contains data. Skipping sample data load.")
                     return
 
             # If we get here, the table is empty, so proceed with loading sample data
             url = "https://storage.googleapis.com/footway-plus-merchant-service-eu-prod-assets-bucket/sample_data/transformed_data_3.csv"
-            response = requests.get(url)
-            response.raise_for_status()
+            async with http.AsyncClient() as client:
+                response = await client.get(url)
+                response.raise_for_status()
 
             # Read CSV into pandas DataFrame
             df = pd.read_csv(StringIO(response.text))
@@ -143,7 +146,7 @@ class PostgresVectorClient:
                     except Exception as inner_e:
                         raise Exception(f"Failed both parsing attempts: {str(inner_e)}")
                 except Exception as e:
-                    self.logger.warning(f"Could not parse metadata, using empty dict instead. Error: {str(e)}\nProblematic string: {cleaned_meta[:200]}")
+                    logger.warning(f"Could not parse metadata, using empty dict instead. Error: {str(e)}\nProblematic string: {cleaned_meta[:200]}")
                     metadata_dict = {}
                 metadata_dicts.append(metadata_dict)
 
@@ -157,10 +160,10 @@ class PostgresVectorClient:
                 metadata=metadata_dicts
             )
 
-            self.logger.info(f"Successfully loaded {len(df)} sample records into the vector store")
+            logger.info(f"Successfully loaded {len(df)} sample records into the vector store")
 
         except Exception as e:
-            self.logger.error(f"Failed to load sample data: {str(e)}")
+            logger.error(f"Failed to load sample data: {str(e)}")
             raise
 
     def add_vectors(
@@ -198,14 +201,14 @@ class PostgresVectorClient:
                     (
                         content,
                         json.dumps(meta) if isinstance(meta, dict) else meta,
-                        np.array(vector).astype(float).tolist()  # Ensure vector is float array
+                        [float(v) for v in vector]
                     )
                     for content, meta, vector in zip(contents, metadata, vectors)
                 ]
                 execute_values(cur, insert_query, values)
                 self.conn.commit()
-        except Exception as e:
-            self.logger.error(f"Failed to add vectors: {str(e)}")
+        except Exception:
+            logger.exception("Failed to add vectors.")
             raise
 
     def search_vectors(
@@ -241,8 +244,8 @@ class PostgresVectorClient:
                 cur.execute(search_query, (query_vector, query_vector, similarity_threshold, limit))
                 results = cur.fetchall()
                 return [(row[0], row[1], row[2]) for row in results]
-        except Exception as e:
-            self.logger.error(f"Failed to search vectors: {str(e)}")
+        except Exception:
+            logger.exception ("Failed to search vectors.")
             raise
 
     def delete_vectors(self, ids: List[int]) -> None:
@@ -259,8 +262,8 @@ class PostgresVectorClient:
             with self.conn.cursor() as cur:
                 cur.execute(delete_query, (ids,))
                 self.conn.commit()
-        except Exception as e:
-            self.logger.error(f"Failed to delete vectors: {str(e)}")
+        except Exception:
+            logger.exception("Failed to delete vectors.")
             raise
 
     def close(self) -> None:

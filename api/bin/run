@@ -1,18 +1,7 @@
 #!/usr/bin/env bash
 
-set -o errexit
-set -o pipefail
-set -o nounset
-[[ "${TRACE:-}" == "true" ]] && set -o xtrace
+. "$(dirname "$0")/init"
 
 trap 'jobs -p | xargs -r kill' EXIT
 
-readonly ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." &> /dev/null && pwd)"
-readonly CACHE="${HOME}/.cache"
-
-export PYTHONPATH="${ROOT}:${PYTHONPATH:-}"
-
-. "$(dirname "$0")/lib/pip_install"
-
-cd "$ROOT"
-exec python src/main.py "$@"
+exec uv run api

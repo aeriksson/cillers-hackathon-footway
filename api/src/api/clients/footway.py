@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Optional
 from datetime import datetime
 from pydantic import BaseModel, Field
 
-from utils.http_client import AsyncClient
+from ..clients.http import AsyncClient
 
 class FilterValue(BaseModel):
     """Represents a single filter option with its count.
