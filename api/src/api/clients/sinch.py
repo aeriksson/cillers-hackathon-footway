@@ -1,8 +1,10 @@
 import os
 import logging
-import requests
+import httpx
 import base64
 from typing import Union, List, Dict, Any
+
+from .http import AsyncClient
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -36,10 +38,12 @@ class Sinch:
         encoded_bytes = base64.b64encode(data.encode("utf-8"))
         return str(encoded_bytes, "utf-8")
 
-    def send_rcs(self,
-                to: Union[str, List[str]],
-                message: str,
-                delivery_report: str = "none") -> Union[Dict[str, Any], List[Dict[str, Any]]]:
+    async def send_rcs(
+        self,
+        to: Union[str, List[str]],
+        message: str,
+        delivery_report: str = "none"
+    ) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
         """
         Send RCS using Sinch Conversation API
 
@@ -77,38 +81,40 @@ class Sinch:
         }
 
         responses = []
-        try:
-            for recipient_number in to_numbers:
-                payload = {
-                    "app_id": self.app_id,
-                    "recipient": {
-                        "identified_by": {
-                            "channel_identities": [
-                                {
-                                    "identity": recipient_number,
-                                    "channel": "RCS"
-                                }
-                            ]
-                        }
-                    },
-                    "message": {
-                        "text_message": {
-                            "text": message
+        async with AsyncClient(headers=self.headers) as client:
+            try:
+                for recipient_number in to_numbers:
+                    payload = {
+                        "app_id": self.app_id,
+                        "recipient": {
+                            "identified_by": {
+                                "channel_identities": [
+                                    {
+                                        "identity": recipient_number,
+                                        "channel": "RCS"
+                                    }
+                                ]
+                            }
+                        },
+                        "message": {
+                            "text_message": {
+                                "text": message
+                            }
                         }
                     }
-                }
 
-                response = requests.post(url, json=payload, headers=headers)
-                response.raise_for_status()  # Raise exception for non-200 status codes
+                    response = await client.post(url, json=payload, headers=headers)
+                    response.raise_for_status()  # Raise exception for non-200 status codes
 
-                response_data = response.json()
-                responses.append(response_data)
+                    response_data = response.json()
+                    responses.append(response_data)
 
-                logger.info("RCS sent successfully to %s", recipient_number)
-                logger.debug("Sinch API response: %s", repr(response_data))
+                    logger.info("RCS sent successfully to %s", recipient_number)
+                    logger.debug("Sinch API response: %s", repr(response_data))
 
-            return responses[0] if len(responses) == 1 else responses
+                return responses[0] if len(responses) == 1 else responses
 
-        except requests.exceptions.RequestException as e:
-            logger.error("Failed to send RCS batch: %s", str(e))
-            raise
+            except httpx.RequestError:
+                logger.exception("Failed to send RCS batch: %s")
+                raise
+
