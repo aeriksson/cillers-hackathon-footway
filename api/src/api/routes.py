@@ -1,6 +1,5 @@
 import json
 import os
-from clients.sinch import Sinch
 from fastapi import APIRouter, Query, HTTPException
 from pydantic import BaseModel
 from openai import OpenAI
@@ -9,6 +8,7 @@ from typing import List, Optional, Dict, Any
 
 from .clients.footway import FootwayClient, InventoryItem
 from .clients.postgres import PostgresVectorClient
+from .clients.sinch import Sinch
 from .utils import log
 
 logger = log.get_logger(__name__)
@@ -172,7 +172,7 @@ async def send_sms(
 ) -> SinchSMSResponse:
     sinch_client = Sinch()
     try:
-        response = sinch_client.send_rcs(to, message)
+        response = await sinch_client.send_rcs(to, message)
         return SinchSMSResponse(
             message_id=response["message_id"],
             accepted_time=response["accepted_time"]
