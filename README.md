@@ -61,7 +61,7 @@ Some things you can try:
 - `curl http://localhost:3000/api` - Responds with a hello world message. This means the API is working!
 - `curl 'http://localhost:3000/api/test/footway?variant_ids=1216453'` - Run a query against the Footway API.
 - `curl 'http://localhost:3000/api/test/vector?query=Soccer'` - Runs a query against the provided vector embeddings.
-- `curl -X POST -H "Content-Type: application/json" -d '{"prompt":"wassup"}' http://localhost:11100/api/test/anthropic` - Run a query against the Anthropic API.
-- `curl -X POST -H "Content-Type: application/json" -d '{"prompt":"wassup"}' http://localhost:11100/api/test/openai` - Run a query against the OpenAI API.
+- `curl -X POST -H "Content-Type: application/json" -d '{"prompt":"wassup"}' http://localhost:3000/api/test/anthropic` - Run a query against the Anthropic API.
+- `curl -X POST -H "Content-Type: application/json" -d '{"prompt":"wassup"}' http://localhost:3000/api/test/openai` - Run a query against the OpenAI API.
 
 You'll have hot reload, so any changes you make to the code will be reflected in the UI immediately - however, if you add or remove packages you'll need to restart the app.
