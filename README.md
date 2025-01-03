@@ -17,7 +17,7 @@ brew install polytopelabs/tap/polytope-cli
 
 Also make sure you're running at least Polytope 0.1.31:
 ```bash
-polytope --version
+pt --version
 - The current CLI version is: 0.1.31-bae4935de-macos-arm64
 ```
 
@@ -43,14 +43,14 @@ cd cillers-hackathon-footway
 
 Next, set the API keys you've been provided with as secrets:
 ```bash
-polytope secret set openai-api-key sk-proj-...
-polytope secret set anthropic-api-key sk-ant-...
-polytope secret set footway-api-key ...
+pt secret set openai-api-key sk-proj-...
+pt secret set anthropic-api-key sk-ant-...
+pt secret set footway-api-key ...
 ```
 
 Finally, run the following command to start the app:
 ```bash
-polytope run stack
+pt run stack
 ```
 
 Then open the UI at [http://localhost:3000](http://localhost:3000). This can take a little while to return something useful - especially on the first run, because it needs to set up all the dependencies.
