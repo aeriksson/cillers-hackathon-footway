@@ -43,14 +43,14 @@ cd cillers-hackathon-footway
 
 Next, set the API keys you've been provided with as secrets:
 ```bash
-pt secret set openai-api-key sk-proj-...
-pt secret set anthropic-api-key sk-ant-...
-pt secret set footway-api-key ...
+polytope secret set openai-api-key sk-proj-...
+polytope secret set anthropic-api-key sk-ant-...
+polytope secret set footway-api-key ...
 ```
 
 Finally, run the following command to start the app:
 ```bash
-pt run stack
+polytope run stack
 ```
 
 Then open the UI at [http://localhost:3000](http://localhost:3000). This can take a little while to return something useful - especially on the first run, because it needs to set up all the dependencies.
@@ -61,7 +61,7 @@ Some things you can try:
 - `curl http://localhost:3000/api` - Responds with a hello world message. This means the API is working!
 - `curl 'http://localhost:3000/api/test/footway?variant_ids=1216453'` - Run a query against the Footway API.
 - `curl 'http://localhost:3000/api/test/vector?query=Soccer'` - Runs a query against the provided vector embeddings.
-- `curl -X POST -H "Content-Type: application/json" -d '{"prompt":"wassup"}' http://localhost:11100/api/test/anthropic` - Run a query against the Anthropic API.
-- `curl -X POST -H "Content-Type: application/json" -d '{"prompt":"wassup"}' http://localhost:11100/api/test/openai` - Run a query against the OpenAI API.
+- `curl -X POST -H "Content-Type: application/json" -d '{"prompt":"wassup"}' http://localhost:3000/api/test/anthropic` - Run a query against the Anthropic API.
+- `curl -X POST -H "Content-Type: application/json" -d '{"prompt":"wassup"}' http://localhost:3000/api/test/openai` - Run a query against the OpenAI API.
 
 You'll have hot reload, so any changes you make to the code will be reflected in the UI immediately - however, if you add or remove packages you'll need to restart the app.
